@@ -1,6 +1,7 @@
 package item.effects;
 
 import core.Entity;
+import core.components.VelocityComponent;
 import systems.EventScheduler;
 
 /**
@@ -30,12 +31,23 @@ public class SpeedEffect {
    * the specified duration. The increase in speed is applied immediately, and its reversal will be
    * scheduled to occur after the duration expires.
    *
-   * <p>TODO: Implement the applySpeedEffect method to schedule the speed increase and its
-   * reversion.
-   *
    * @param target The entity to which the speed effect will be applied.
    */
   public void applySpeedEffect(Entity target) {
-    throw new UnsupportedOperationException("Method not implemented.");
+    VelocityComponent vc = target
+        .fetch(VelocityComponent.class)
+        .orElseThrow(() -> new IllegalArgumentException("Entity does not have a VelocityComponent"));
+
+    vc.xVelocity(vc.xVelocity() + speedIncrease);
+    vc.yVelocity(vc.yVelocity() + speedIncrease);
+
+    EventScheduler eventScheduler = EventScheduler.getInstance();
+
+    eventScheduler.scheduleAction(
+        () -> {
+          vc.xVelocity(vc.xVelocity() - speedIncrease);
+          vc.yVelocity(vc.yVelocity() - speedIncrease);
+        },
+        (long)duration * 1000);
   }
 }
